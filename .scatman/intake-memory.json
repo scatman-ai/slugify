@@ -1,0 +1,24 @@
+{
+  "kind": "scatman.intake-memory",
+  "version": 1,
+  "repoFullName": "scatman-ai/slugify",
+  "updatedAt": "2026-03-12T00:01:33.473Z",
+  "repo": {
+    "provider": "github",
+    "repoId": "1179344130",
+    "defaultBranch": "main",
+    "initializedBy": "repo-onboarding"
+  },
+  "memory": {
+    "repoFullName": "scatman-ai/slugify",
+    "lastBranch": "main",
+    "preferredFastTrackType": null,
+    "recentRunCount": 0,
+    "successfulRunCount": 0,
+    "recentEstimateCount": 0,
+    "lastRunId": null,
+    "lastRunFinishedAt": null,
+    "updatedAt": "2026-03-12T00:01:33.473Z",
+    "sessions": []
+  }
+}
