@@ -255,3 +255,196 @@ test('transliterate option disabled', t => {
 	t.is(slugify('Déjà Vu'), 'deja-vu');
 	t.is(slugify('foo & bar'), 'foo-and-bar');
 });
+
+test('edge cases - empty and whitespace strings', t => {
+	t.is(slugify(''), '');
+	t.is(slugify(' '), '');
+	t.is(slugify('   '), '');
+	t.is(slugify('\t\n\r'), '');
+	t.is(slugify('\u00A0'), ''); // Non-breaking space
+	t.is(slugify('\u2000\u2001\u2002'), ''); // Various Unicode spaces
+});
+
+test('edge cases - consecutive separators and special characters', t => {
+	t.is(slugify('foo---bar'), 'foo-bar');
+	t.is(slugify('foo___bar'), 'foo-bar');
+	t.is(slugify('foo   bar'), 'foo-bar');
+	t.is(slugify('foo!!!bar'), 'foo-bar');
+	t.is(slugify('foo@@@bar'), 'foo-bar');
+	t.is(slugify('foo###bar'), 'foo-bar');
+	t.is(slugify('foo$$bar'), 'foo-bar');
+	t.is(slugify('foo%%%bar'), 'foo-bar');
+	t.is(slugify('foo^^^bar'), 'foo-bar');
+	t.is(slugify('foo***bar'), 'foo-bar');
+	t.is(slugify('foo...bar'), 'foo-bar');
+	t.is(slugify('foo,,,bar'), 'foo-bar');
+	t.is(slugify('foo;;;bar'), 'foo-bar');
+	t.is(slugify('foo:::bar'), 'foo-bar');
+	t.is(slugify('foo???bar'), 'foo-bar');
+	t.is(slugify('foo///bar'), 'foo-bar');
+	t.is(slugify('foo\\\\bar'), 'foo-bar');
+	t.is(slugify('foo|||bar'), 'foo-bar');
+	t.is(slugify('foo+++bar'), 'foo-bar');
+	t.is(slugify('foo===bar'), 'foo-bar');
+	t.is(slugify('foo~~~bar'), 'foo-bar');
+	t.is(slugify('foo```bar'), 'foo-bar');
+});
+
+test('edge cases - mixed consecutive separators', t => {
+	t.is(slugify('foo-_-bar'), 'foo-bar');
+	t.is(slugify('foo _- bar'), 'foo-bar');
+	t.is(slugify('foo!@#$%bar'), 'foo-bar');
+	t.is(slugify('foo^&*()bar'), 'foo-bar');
+	t.is(slugify('foo[]{}bar'), 'foo-bar');
+	t.is(slugify('foo<>bar'), 'foo-bar');
+	t.is(slugify('foo"\'\'"bar'), 'foo-bar');
+});
+
+test('edge cases - unicode characters and emoji', t => {
+	// Extended Unicode characters
+	t.is(slugify('🌟✨⭐'), 'star-sparkles-star');
+	t.is(slugify('🚀🛸🌌'), 'rocket-flying-saucer-milky-way');
+	t.is(slugify('💻📱⌨️'), 'laptop-computer-mobile-phone-keyboard');
+	t.is(slugify('🎵🎶🎼'), 'musical-note-musical-notes-musical-score');
+	t.is(slugify('🔥💧⚡'), 'fire-droplet-high-voltage');
+	
+	// Mixed emoji and text
+	t.is(slugify('Hello 👋 World 🌍'), 'hello-waving-hand-world-globe-showing-europe-africa');
+	t.is(slugify('Coffee ☕ Time ⏰'), 'coffee-hot-beverage-time-alarm-clock');
+	t.is(slugify('I ❤️ JavaScript'), 'i-red-heart-javascript');
+	
+	// Unicode symbols and mathematical operators
+	t.is(slugify('α + β = γ'), 'alpha-beta-gamma');
+	t.is(slugify('∑ ∏ ∫'), 'summation-product-integral');
+	t.is(slugify('≤ ≥ ≠'), 'less-than-or-equal-to-greater-than-or-equal-to-not-equal-to');
+	t.is(slugify('∞ ∅ ∆'), 'infinity-empty-set-increment');
+	
+	// Various Unicode blocks
+	t.is(slugify('→ ← ↑ ↓'), 'rightwards-arrow-leftwards-arrow-upwards-arrow-downwards-arrow');
+	t.is(slugify('★ ☆ ♠ ♥ ♦ ♣'), 'black-star-white-star-black-spade-suit-black-heart-suit-black-diamond-suit-black-club-suit');
+	t.is(slugify('© ® ™'), 'copyright-sign-registered-sign-trade-mark-sign');
+});
+
+test('edge cases - unicode with transliterate disabled', t => {
+	// Emoji should be stripped when transliterate is false
+	t.is(slugify('Hello 👋 World', {transliterate: false}), 'hello-world');
+	t.is(slugify('🌟✨⭐', {transliterate: false}), '');
+	t.is(slugify('Test 🔥 Content', {transliterate: false}), 'test-content');
+	
+	// Unicode letters should be preserved
+	t.is(slugify('Déjà Vu 🚀', {transliterate: false}), 'déjà-vu');
+	t.is(slugify('Café ☕ Shop', {transliterate: false}), 'café-shop');
+});
+
+test('edge cases - leading and trailing separators', t => {
+	t.is(slugify('---foo---'), 'foo');
+	t.is(slugify('___bar___'), 'bar');
+	t.is(slugify('...baz...'), 'baz');
+	t.is(slugify('!!!qux!!!'), 'qux');
+	t.is(slugify('@@@test@@@'), 'test');
+	t.is(slugify('###hello###'), 'hello');
+	t.is(slugify('   world   '), 'world');
+	
+	// Mixed leading/trailing characters
+	t.is(slugify('-_-foo-_-'), 'foo');
+	t.is(slugify('!@#bar#@!'), 'bar');
+	t.is(slugify(' . _ - baz - _ . '), 'baz');
+});
+
+test('edge cases - numbers and mixed alphanumeric', t => {
+	t.is(slugify('123'), '123');
+	t.is(slugify('0'), '0');
+	t.is(slugify('3.14159'), '3-14159');
+	t.is(slugify('1,000,000'), '1-000-000');
+	t.is(slugify('v1.2.3'), 'v1-2-3');
+	t.is(slugify('2023-12-31'), '2023-12-31');
+	t.is(slugify('foo123bar'), 'foo123bar');
+	t.is(slugify('123foo456bar789'), '123foo456bar789');
+	
+	// Scientific notation
+	t.is(slugify('1e10'), '1e10');
+	t.is(slugify('3.14e-5'), '3-14e-5');
+	t.is(slugify('6.022e+23'), '6-022e-23');
+});
+
+test('edge cases - very long strings', t => {
+	const longString = 'a'.repeat(1000);
+	t.is(slugify(longString), longString);
+	
+	const longStringWithSpaces = Array(100).fill('word').join(' ');
+	const expected = Array(100).fill('word').join('-');
+	t.is(slugify(longStringWithSpaces), expected);
+	
+	const longStringWithSpecialChars = Array(100).fill('word!!!').join(' ');
+	const expectedSpecial = Array(100).fill('word').join('-');
+	t.is(slugify(longStringWithSpecialChars), expectedSpecial);
+});
+
+test('edge cases - single characters', t => {
+	t.is(slugify('a'), 'a');
+	t.is(slugify('A'), 'a');
+	t.is(slugify('1'), '1');
+	t.is(slugify('!'), '');
+	t.is(slugify('@'), '');
+	t.is(slugify('#'), '');
+	t.is(slugify('
+), '');
+	t.is(slugify('%'), '');
+	t.is(slugify('^'), '');
+	t.is(slugify('&'), 'and');
+	t.is(slugify('*'), '');
+	t.is(slugify('('), '');
+	t.is(slugify(')'), '');
+	t.is(slugify('-'), '');
+	t.is(slugify('_'), '');
+	t.is(slugify('='), '');
+	t.is(slugify('+'), '');
+	t.is(slugify('['), '');
+	t.is(slugify(']'), '');
+	t.is(slugify('{'), '');
+	t.is(slugify('}'), '');
+	t.is(slugify('|'), '');
+	t.is(slugify('\\'), '');
+	t.is(slugify(';'), '');
+	t.is(slugify(':'), '');
+	t.is(slugify('\''), '');
+	t.is(slugify('"'), '');
+	t.is(slugify(','), '');
+	t.is(slugify('.'), '');
+	t.is(slugify('<'), '');
+	t.is(slugify('>'), '');
+	t.is(slugify('/'), '');
+	t.is(slugify('?'), '');
+	t.is(slugify('~'), '');
+	t.is(slugify('`'), '');
+});
+
+test('edge cases - complex real-world examples', t => {
+	// File paths and URLs
+	t.is(slugify('C:\\Users\\John\\Documents\\file.txt'), 'c-users-john-documents-file-txt');
+	t.is(slugify('https://www.example.com/path?query=value'), 'https-www-example-com-path-query-value');
+	t.is(slugify('/home/user/.bashrc'), 'home-user-bashrc');
+	
+	// Code snippets
+	t.is(slugify('function() { return true; }'), 'function-return-true');
+	t.is(slugify('if (x === null) { throw new Error(); }'), 'if-x-null-throw-new-error');
+	t.is(slugify('<div class="container"></div>'), 'div-class-container-div');
+	
+	// Email addresses
+	t.is(slugify('user@example.com'), 'user-example-com');
+	t.is(slugify('john.doe+tag@company.co.uk'), 'john-doe-tag-company-co-uk');
+	
+	// Social media handles and hashtags
+	t.is(slugify('@username'), 'username');
+	t.is(slugify('#hashtag'), 'hashtag');
+	t.is(slugify('@user_name #cool_tag'), 'user-name-cool-tag');
+	
+	// Chemical formulas and scientific notation
+	t.is(slugify('H₂SO₄'), 'h2so4');
+	t.is(slugify('CO₂ + H₂O → H₂CO₃'), 'co2-h2o-h2co3');
+	t.is(slugify('E = mc²'), 'e-mc2');
+	
+	// International phone numbers
+	t.is(slugify('+1 (555) 123-4567'), '1-555-123-4567');
+	t.is(slugify('+44 20 7946 0958'), '44-20-7946-0958');
+});
