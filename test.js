@@ -231,6 +231,28 @@ test('locale option', t => {
 });
 
 test('transliterate option disabled', t => {
+
+});
+
+test('unicode and special characters', t => {
+  t.is(slugify('你好世界'), 'ni-hao-shi-jie');
+  t.is(slugify('مرحبا'), 'mrhba');
+  t.is(slugify('I ♥ Dogs'), 'i-love-dogs');
+  t.is(slugify('Déjà Vu!'), 'deja-vu');
+  t.is(slugify('foo@bar.com'), 'foo-at-bar-com');
+});
+
+test('consecutive hyphens', t => {
+  t.is(slugify('foo---bar'), 'foo-bar');
+  t.is(slugify('foo--bar--baz'), 'foo-bar-baz');
+  t.is(slugify('foo---bar---baz', {separator: '_'}), 'foo_bar_baz');
+});
+
+test('empty strings', t => {
+  t.is(slugify(''), '');
+  t.is(slugify('   '), '');
+  t.is(slugify(''), {separator: '_'}, '');
+});
 	// Test what happens when transliteration is disabled
 	// ASCII characters work normally
 	t.is(slugify('foo bar', {transliterate: false}), 'foo-bar');
