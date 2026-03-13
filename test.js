@@ -255,3 +255,152 @@ test('transliterate option disabled', t => {
 	t.is(slugify('Déjà Vu'), 'deja-vu');
 	t.is(slugify('foo & bar'), 'foo-and-bar');
 });
+
+test('edge cases - empty and whitespace strings', t => {
+	// Empty string
+	t.is(slugify(''), '');
+	
+	// Only whitespace
+	t.is(slugify('   '), '');
+	t.is(slugify('\t\n\r'), '');
+	t.is(slugify(' \t \n \r '), '');
+	
+	// Only special characters that get removed
+	t.is(slugify('!@#$%^&*()'), 'and');
+	t.is(slugify('[]{}()<>'), '');
+	t.is(slugify('+=|\\/?'), '');
+	
+	// Single character
+	t.is(slugify('a'), 'a');
+	t.is(slugify('A'), 'a');
+	t.is(slugify('1'), '1');
+});
+
+test('edge cases - consecutive hyphens and separators', t => {
+	// Multiple consecutive spaces become single separator
+	t.is(slugify('foo    bar'), 'foo-bar');
+	t.is(slugify('foo        bar'), 'foo-bar');
+	
+	// Mixed whitespace types
+	t.is(slugify('foo \t\n\r bar'), 'foo-bar');
+	
+	// Special characters creating multiple separators
+	t.is(slugify('foo!!!bar'), 'foo-bar');
+	t.is(slugify('foo###bar'), 'foo-bar');
+	t.is(slugify('foo...bar'), 'foo-bar');
+	t.is(slugify('foo---bar'), 'foo-bar');
+	
+	// Leading and trailing special characters
+	t.is(slugify('---foo---'), 'foo');
+	t.is(slugify('...foo...'), 'foo');
+	t.is(slugify('!!!foo!!!'), 'foo');
+	
+	// Custom separator with consecutive characters
+	t.is(slugify('foo!!!bar', {separator: '_'}), 'foo_bar');
+	t.is(slugify('foo   bar', {separator: '|'}), 'foo|bar');
+});
+
+test('edge cases - unicode and emoji handling', t => {
+	// Mixed emoji and text
+	t.is(slugify('Hello 👋 World 🌍'), 'hello-world');
+	t.is(slugify('Test 🦄 💖 🎉'), 'test-unicorn-love');
+	
+	// Complex unicode characters
+	t.is(slugify('café naïve résumé'), 'cafe-naive-resume');
+	t.is(slugify('Москва Санкт-Петербург'), 'moskva-sankt-peterburg');
+	t.is(slugify('北京 上海 广州'), 'bei-jing-shang-hai-guang-zhou');
+	
+	// Unicode with transliterate disabled
+	t.is(slugify('café naïve', {transliterate: false}), 'café-naïve');
+	t.is(slugify('Hello 👋 World', {transliterate: false}), 'hello-world');
+	
+	// Zero-width and invisible characters
+	t.is(slugify('foo\u200Bbar'), 'foo-bar'); // Zero-width space
+	t.is(slugify('foo\u00ADbar'), 'foo-bar'); // Soft hyphen
+	t.is(slugify('foo\u2060bar'), 'foo-bar'); // Word joiner
+});
+
+test('edge cases - special character combinations', t => {
+	// Multiple ampersands
+	t.is(slugify('foo && bar'), 'foo-and-and-bar');
+	t.is(slugify('A & B & C'), 'a-and-b-and-c');
+	
+	// Hearts and unicorns together
+	t.is(slugify('I ♥ 🦄'), 'i-love-unicorn');
+	t.is(slugify('♥♥♥ 🦄🦄🦄'), 'love-love-love-unicorn-unicorn-unicorn');
+	
+	// Mixed quotes and apostrophes
+	t.is(slugify('"Hello" \'World\''), 'hello-world');
+	t.is(slugify('it\'s "great"'), 'its-great');
+	
+	// Parentheses and brackets
+	t.is(slugify('foo(bar)baz'), 'foo-bar-baz');
+	t.is(slugify('test[1][2][3]'), 'test-1-2-3');
+	t.is(slugify('{foo: bar}'), 'foo-bar');
+});
+
+test('edge cases - numbers and mixed content', t => {
+	// Leading numbers
+	t.is(slugify('123 test'), '123-test');
+	t.is(slugify('2023-01-01'), '2023-01-01');
+	
+	// Mixed alphanumeric
+	t.is(slugify('HTML5 CSS3 JS'), 'html5-css3-js');
+	t.is(slugify('iPhone14Pro'), 'i-phone14-pro');
+	
+	// Version numbers and decimals
+	t.is(slugify('v1.2.3'), 'v1-2-3');
+	t.is(slugify('Node.js 18.0'), 'node-js-18-0');
+	
+	// Scientific notation
+	t.is(slugify('1.5e-10'), '1-5e-10');
+	t.is(slugify('2E+5'), '2e-5');
+});
+
+test('edge cases - very long strings', t => {
+	// Long string with repeating pattern
+	const longString = 'foo bar '.repeat(100).trim();
+	const result = slugify(longString);
+	t.true(result.length > 0);
+	t.false(result.includes('  '));
+	t.false(result.startsWith('-'));
+	t.false(result.endsWith('-'));
+	
+	// Long string with mixed content
+	const mixedLong = 'Hello World! '.repeat(50) + 'End';
+	const mixedResult = slugify(mixedLong);
+	t.true(mixedResult.includes('hello-world'));
+	t.true(mixedResult.endsWith('end'));
+});
+
+test('edge cases - input validation', t => {
+	// Non-string inputs should throw
+	t.throws(() => slugify(null));
+	t.throws(() => slugify(undefined));
+	t.throws(() => slugify(123));
+	t.throws(() => slugify({}));
+	t.throws(() => slugify([]));
+	t.throws(() => slugify(true));
+});
+
+test('edge cases - option combinations', t => {
+	// Multiple options combined
+	t.is(slugify('_Foo Bar-', {
+		preserveLeadingUnderscore: true,
+		preserveTrailingDash: true,
+		lowercase: false,
+		separator: '_'
+	}), '_Foo_Bar-');
+	
+	// Custom replacements with preserve characters
+	t.is(slugify('foo@bar#baz', {
+		customReplacements: [['@', '-at-']],
+		preserveCharacters: ['#']
+	}), 'foo-at-bar#baz');
+	
+	// Disabled transliterate with custom replacements
+	t.is(slugify('café & résumé', {
+		transliterate: false,
+		customReplacements: [['&', ' and ']]
+	}), 'café-and-résumé');
+});
