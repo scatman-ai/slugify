@@ -1,0 +1,20 @@
+name: QA
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+jobs:
+  qa:
+    name: qa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci; elif [ -f yarn.lock ]; then yarn install --frozen-lockfile; elif [ -f pnpm-lock.yaml ]; then npx pnpm install --frozen-lockfile; else npm install; fi
+      - name: Run tests
+        run: npm test --if-present
