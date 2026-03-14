@@ -223,6 +223,78 @@ slugify('Räksmörgås', {locale: 'sv'});
 //=> 'raksmorgas'
 ```
 
+## Locales
+
+The `locale` option enables language-specific transliteration rules that produce more natural results for different languages. This is particularly useful for handling special characters, diacritics, and language-specific conventions.
+
+### German (Deutsch)
+
+German has specific rules for handling umlauts and the sharp S (Eszett):
+
+```js
+import slugify from '@sindresorhus/slugify';
+
+// Default transliteration
+slugify('Müller Straße');
+//=> 'muller-strasse'
+
+// German-specific transliteration
+slugify('Müller Straße', {locale: 'de'});
+//=> 'mueller-strasse'
+
+slugify('Fähre Größe', {locale: 'de'});
+//=> 'faehre-groesse'
+```
+
+### Vietnamese (Tiếng Việt)
+
+Vietnamese uses tone marks and specific character combinations:
+
+```js
+import slugify from '@sindresorhus/slugify';
+
+// Vietnamese text with tone marks
+slugify('Đỗ Thành Dũng');
+//=> 'do-thanh-dung'
+
+slugify('Phở Hà Nội', {locale: 'vi'});
+//=> 'pho-ha-noi'
+
+slugify('Trường Đại học', {locale: 'vi'});
+//=> 'truong-dai-hoc'
+```
+
+### Arabic (العربية)
+
+Arabic script is transliterated to Latin characters:
+
+```js
+import slugify from '@sindresorhus/slugify';
+
+// Arabic text
+slugify('مرحبا بالعالم');
+//=> 'mrhba-balalam'
+
+slugify('الشرق الأوسط', {locale: 'ar'});
+//=> 'alshrq-alawst'
+
+slugify('قهوة عربية', {locale: 'ar'});
+//=> 'qhwt-arby'
+```
+
+### Comparison Table
+
+Here's how different locales handle the same characters:
+
+| Input | Default | German (`de`) | Swedish (`sv`) | Description |
+|-------|---------|---------------|----------------|--------------|
+| `Größe` | `grosse` | `groesse` | `grosse` | German ß handling |
+| `Räksmörgås` | `raeksmoergas` | `raeksmoergas` | `raksmorgas` | Scandinavian characters |
+| `Fön` | `fon` | `foen` | `fon` | Umlaut transliteration |
+| `Müller` | `muller` | `mueller` | `muller` | German ü to ue |
+
+**Note**: The locale option depends on the underlying transliteration library. Some locales may have more comprehensive rules than others. When no specific locale is provided, the default transliteration uses general Unicode-to-ASCII mappings.
+
 ##### transliterate
 
 Type: `boolean`\
