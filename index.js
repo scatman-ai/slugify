@@ -43,6 +43,49 @@ const buildPatternSlug = options => {
 	return new RegExp(`[^${negationSetPattern}]+`, flags);
 };
 
+/**
+ * Slugify a string.
+ * 
+ * Transforms a string into a URL-safe slug by removing or replacing special characters,
+ * handling Unicode transliteration, and applying various formatting options.
+ * 
+ * @param {string} string - The input string to slugify
+ * @param {Object} [options] - Configuration options
+ * @param {string} [options.separator='-'] - Character(s) to use as separator between words
+ * @param {boolean} [options.lowercase=true] - Convert the result to lowercase
+ * @param {boolean} [options.decamelize=true] - Convert camelCase to separate words (fooBar → foo bar)
+ * @param {Array<[string, string]>} [options.customReplacements=[]] - Custom character/string replacements to apply before other transformations
+ * @param {boolean} [options.preserveLeadingUnderscore=false] - Keep leading underscore in the result
+ * @param {boolean} [options.preserveTrailingDash=false] - Keep trailing dash in the result
+ * @param {string[]} [options.preserveCharacters=[]] - Array of characters to preserve in the output (cannot include separator)
+ * @param {string} [options.locale] - Locale for language-specific transliteration and case conversion
+ * @param {boolean} [options.transliterate=true] - Whether to transliterate Unicode characters to ASCII
+ * 
+ * @returns {string} The slugified string
+ * 
+ * @throws {TypeError} If the input is not a string
+ * @throws {Error} If separator is included in preserveCharacters array
+ * 
+ * @example
+ * // Basic usage
+ * slugify('I ♥ Dogs');
+ * //=> 'i-love-dogs'
+ * 
+ * @example
+ * // Custom separator
+ * slugify('foo bar', {separator: '_'});
+ * //=> 'foo_bar'
+ * 
+ * @example
+ * // Preserve case
+ * slugify('Hello World', {lowercase: false});
+ * //=> 'Hello-World'
+ * 
+ * @example
+ * // Custom replacements
+ * slugify('foo@bar', {customReplacements: [['@', ' at ']]});
+ * //=> 'foo-at-bar'
+ */
 export default function slugify(string, options) {
 	if (typeof string !== 'string') {
 		throw new TypeError(`Expected a string, got \`${typeof string}\``);
@@ -109,6 +152,28 @@ export default function slugify(string, options) {
 	return string;
 }
 
+/**
+ * Creates a slugify function with a built-in counter to handle duplicate slugs.
+ * 
+ * Returns a new slugify function that automatically appends numbers to duplicate slugs.
+ * The returned function also has a `reset()` method to clear the counter.
+ * 
+ * @returns {Function & {reset: Function}} A slugify function with counter and reset method
+ * 
+ * @example
+ * const slugify = slugifyWithCounter();
+ * 
+ * slugify('foo bar');
+ * //=> 'foo-bar'
+ * 
+ * slugify('foo bar');
+ * //=> 'foo-bar-2'
+ * 
+ * slugify.reset();
+ * 
+ * slugify('foo bar');
+ * //=> 'foo-bar'
+ */
 export function slugifyWithCounter() {
 	const occurrences = new Map();
 
