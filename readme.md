@@ -17,6 +17,15 @@ npm install @sindresorhus/slugify
 ```js
 import slugify from '@sindresorhus/slugify';
 
+console.log(slugify('Hello World!'));
+//=> 'hello-world'
+```
+
+## Usage
+
+```js
+import slugify from '@sindresorhus/slugify';
+
 slugify('I ♥ Dogs');
 //=> 'i-love-dogs'
 
