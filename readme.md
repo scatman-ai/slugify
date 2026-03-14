@@ -30,6 +30,77 @@ slugify('я люблю единорогов');
 //=> 'ya-lyublyu-edinorogov'
 ```
 
+## Usage Examples
+
+### Basic String Slugification
+
+Simple text with spaces and special characters:
+
+```js
+import slugify from '@sindresorhus/slugify';
+
+slugify('Hello World!');
+//=> 'hello-world'
+
+slugify('My Awesome Blog Post');
+//=> 'my-awesome-blog-post'
+```
+
+### Unicode Character Handling
+
+Working with international characters and emojis:
+
+```js
+import slugify from '@sindresorhus/slugify';
+
+slugify('Café München');
+//=> 'cafe-munchen'
+
+slugify('🌟 Amazing Product 🚀');
+//=> 'amazing-product'
+
+slugify('中文测试');
+//=> 'zhong-wen-ce-shi'
+```
+
+### Custom Separators
+
+Using different separators for various use cases:
+
+```js
+import slugify from '@sindresorhus/slugify';
+
+// Using underscore for file names
+slugify('My File Name', {separator: '_'});
+//=> 'my_file_name'
+
+// Using dots for namespacing
+slugify('User Profile Settings', {separator: '.'});
+//=> 'user.profile.settings'
+
+// No separator for compact IDs
+slugify('Product Code ABC', {separator: ''});
+//=> 'productcodeabc'
+```
+
+### Mixed Examples
+
+Combining different options for specific needs:
+
+```js
+import slugify from '@sindresorhus/slugify';
+
+// Preserve case for brand names
+slugify('iPhone & MacBook', {lowercase: false});
+//=> 'iPhone-and-MacBook'
+
+// Custom replacements for domain-specific terms
+slugify('SQL Server 2022', {
+  customReplacements: [['SQL', 'Structured Query Language']]
+});
+//=> 'structured-query-language-server-2022'
+```
+
 ## API
 
 ### slugify(string, options?)
