@@ -2,6 +2,13 @@ import escapeStringRegexp from 'escape-string-regexp';
 import transliterate from '@sindresorhus/transliterate';
 import builtinOverridableReplacements from './overridable-replacements.js';
 
+/**
+ * Converts camelCase and PascalCase strings to separate words.
+ * Handles various capitalization patterns including consecutive capitals,
+ * numbers, and acronyms.
+ * @param {string} string - The string to decamelize
+ * @returns {string} The decamelized string with spaces separating words
+ */
 const decamelize = string => string
 	// Separate capitalized words.
 	.replaceAll(/([A-Z]{2,})(\d+)/g, '$1 $2')
@@ -12,6 +19,13 @@ const decamelize = string => string
 	// This avoids matching plural acronyms like `APIs`.
 	.replaceAll(/([A-Z]+)([A-Z][a-rt-z\d]+)/g, '$1 $2');
 
+/**
+ * Removes redundant separators from a string, including multiple consecutive
+ * separators and leading/trailing separators.
+ * @param {string} string - The string to clean up
+ * @param {string} separator - The separator character to normalize
+ * @returns {string} The string with normalized separators
+ */
 const removeMootSeparators = (string, separator) => {
 	const escapedSeparator = escapeStringRegexp(separator);
 
@@ -20,6 +34,16 @@ const removeMootSeparators = (string, separator) => {
 		.replaceAll(new RegExp(`^(?:${escapedSeparator})|(?:${escapedSeparator})$`, 'g'), '');
 };
 
+/**
+ * Builds a regular expression pattern for matching characters to replace
+ * with separators during slugification.
+ * @param {object} options - The slugify options object
+ * @param {boolean} options.lowercase - Whether to include uppercase letters
+ * @param {boolean} options.transliterate - Whether to use Unicode-aware pattern
+ * @param {string[]} options.preserveCharacters - Characters to preserve
+ * @param {string} options.separator - The separator character
+ * @returns {RegExp} Regular expression for matching non-slug characters
+ */
 const buildPatternSlug = options => {
 	let negationSetPattern = String.raw`a-z\d`;
 	negationSetPattern += options.lowercase ? '' : 'A-Z';
@@ -43,6 +67,24 @@ const buildPatternSlug = options => {
 	return new RegExp(`[^${negationSetPattern}]+`, flags);
 };
 
+/**
+ * Slugify a string by converting it to a URL-safe format.
+ * Handles transliteration, custom replacements, case conversion,
+ * and various formatting options.
+ * @param {string} string - The string to slugify
+ * @param {object} [options={}] - Configuration options
+ * @param {string} [options.separator='-'] - Character to use as separator
+ * @param {boolean} [options.lowercase=true] - Convert to lowercase
+ * @param {boolean} [options.decamelize=true] - Convert camelCase to separate words
+ * @param {Array<[string, string]>} [options.customReplacements=[]] - Custom character replacements
+ * @param {boolean} [options.preserveLeadingUnderscore=false] - Keep leading underscore
+ * @param {boolean} [options.preserveTrailingDash=false] - Keep trailing dash
+ * @param {string[]} [options.preserveCharacters=[]] - Characters to preserve in output
+ * @param {string} [options.locale] - Locale for transliteration and case conversion
+ * @param {boolean} [options.transliterate=true] - Whether to transliterate Unicode to ASCII
+ * @returns {string} The slugified string
+ * @throws {TypeError} When input is not a string
+ */
 export default function slugify(string, options) {
 	if (typeof string !== 'string') {
 		throw new TypeError(`Expected a string, got \`${typeof string}\``);
@@ -109,6 +151,14 @@ export default function slugify(string, options) {
 	return string;
 }
 
+/**
+ * Creates a slugify function with built-in counter to handle duplicate slugs.
+ * The returned function maintains an internal counter and appends numbers
+ * to duplicate slugs (e.g., 'foo', 'foo-2', 'foo-3').
+ * @returns {object} Object with slugify function and reset method
+ * @returns {Function} countable - Slugify function with counter
+ * @returns {Function} countable.reset - Method to reset the counter
+ */
 export function slugifyWithCounter() {
 	const occurrences = new Map();
 
