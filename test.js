@@ -3,6 +3,13 @@ import slugify, {slugifyWithCounter} from './index.js';
 
 test('main', t => {
 	t.is(slugify('Foo Bar'), 'foo-bar');
+	t.is(slugify(''), ''); // Test empty string
+	t.is(slugify('你好世界'), 'ni-hao-shi-jie'); // Test unicode
+	t.is(slugify('مرحبا'), 'mrhba'); // Test Arabic
+	t.is(slugify('foo_bar', {separator: '_'}), 'foo_bar'); // Test custom separator
+	t.is(slugify('_foo_bar', {preserveLeadingUnderscore: true}), '_foo-bar'); // Test preserveLeadingUnderscore
+	t.is(slugify('Räksmörgås', {locale: 'sv'}), 'raksmorgas'); // Test locale option
+	t.is(slugify('Déjà Vu', {transliterate: false}), 'déjà-vu'); // Test transliterate option disabled
 	t.is(slugify('foo bar baz'), 'foo-bar-baz');
 	t.is(slugify('foo bar '), 'foo-bar');
 	t.is(slugify('       foo bar'), 'foo-bar');
