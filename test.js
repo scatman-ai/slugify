@@ -230,6 +230,16 @@ test('locale option', t => {
 	t.is(slugify('TEST'), 'test'); // Default behavior same for basic ASCII
 });
 
+test('strings with only numbers', t => {
+	// Test that strings containing only numbers preserve the digits
+	t.is(slugify('123'), '123');
+	t.is(slugify('456789'), '456789');
+	t.is(slugify(' 123 '), '123');
+	t.is(slugify('0'), '0');
+	t.is(slugify('42.5'), '42-5');
+	t.is(slugify('123-456'), '123-456');
+});
+
 test('transliterate option disabled', t => {
 	// Test what happens when transliteration is disabled
 	// ASCII characters work normally
