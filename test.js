@@ -150,10 +150,19 @@ test('supports Armenian', t => {
 });
 
 test('leading underscore', t => {
+	// Test default behavior (preserveLeadingUnderscore: false)
+	t.is(slugify('_foo bar'), 'foo-bar');
+	t.is(slugify('_foo_bar'), 'foo-bar');
+
+	// Test preserveLeadingUnderscore: true
 	t.is(slugify('_foo bar', {preserveLeadingUnderscore: true}), '_foo-bar');
 	t.is(slugify('_foo_bar', {preserveLeadingUnderscore: true}), '_foo-bar');
 	t.is(slugify('__foo__bar', {preserveLeadingUnderscore: true}), '_foo-bar');
 	t.is(slugify('____-___foo__bar', {preserveLeadingUnderscore: true}), '_foo-bar');
+
+	// Test strings that don't start with underscore
+	t.is(slugify('foo_bar', {preserveLeadingUnderscore: true}), 'foo-bar');
+	t.is(slugify('foo_bar_', {preserveLeadingUnderscore: true}), 'foo-bar');
 });
 
 test('trailing dash', t => {
